@@ -8,18 +8,25 @@
     <h2>{{competition['name']}}</h2>
     {% with messages = get_flashed_messages() %}
     {% if messages %}
-        <ul>{% for message in messages %}<li>{{ message }}</li>{% endfor %}</ul>
+        <ul>
+        {% for message in messages %}<li>{{ message }}</li>{% endfor %}
+        </ul>
     {% endif %}
     {% endwith %}
     Places available: {{competition['numberOfPlaces']}}
-    <form action="/purchasePlaces" method="post">
-        <input type="hidden" name="club" value="{{club['name']}}">
+    <p>Club points: {{ club['points'] }}</p>
+    <p>Already booked by this club: {{ competition.get('bookings', {}).get(club['name'], 0) }} / 12</p>
+    {% set limit = remaining_booking_limit(club, competition) %}
+    {% if limit > 0 %}
+    <form action="{{ url_for('purchase_places') }}" method="post">
         <input type="hidden" name="competition" value="{{competition['name']}}">
         <label for="places">How many places?</label>
-        {% set already_booked = competition.get('bookings', {}).get(club['name'], 0) %}
-        <input type="number" name="places" id="places" min="1" max="{{ [club['points']|int, competition['numberOfPlaces']|int, 12 - already_booked|int]|min }}" required/>
+        <input type="number" name="places" id="places" min="1" max="{{ limit }}" required/>
         <button type="submit">Book</button>
     </form>
+    {% else %}
+    <p>No more places can be booked by this club for this competition.</p>
+    {% endif %}
     <p><a href="{{ url_for('points_display') }}">View club points</a></p>
 </body>
 </html>
