@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 from flask import Flask,render_template,request,redirect,flash,url_for
 
 
@@ -20,6 +21,16 @@ app.secret_key = 'something_special'
 competitions = loadCompetitions()
 clubs = loadClubs()
 
+
+def is_competition_past(competition):
+    competition_date = datetime.strptime(competition['date'], '%Y-%m-%d %H:%M:%S')
+    return competition_date < datetime.now()
+
+
+@app.context_processor
+def current_time():
+    return {'now': datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -38,6 +49,9 @@ def showSummary():
 def book(competition,club):
     foundClub = [c for c in clubs if c['name'] == club][0]
     foundCompetition = [c for c in competitions if c['name'] == competition][0]
+    if is_competition_past(foundCompetition):
+        flash('You cannot book a past competition.')
+        return render_template('welcome.html', club=foundClub, competitions=competitions)
     if foundClub and foundCompetition:
         return render_template('booking.html',club=foundClub,competition=foundCompetition)
     else:
@@ -62,6 +76,9 @@ def purchasePlaces():
         return render_template('booking.html', club=club, competition=competition)
     if placesRequired <= 0:
         flash('Please enter a positive number of places.')
+        return render_template('booking.html', club=club, competition=competition)
+    if is_competition_past(competition):
+        flash('You cannot book a past competition.')
         return render_template('booking.html', club=club, competition=competition)
     if placesRequired > int(club['points']):
         flash('You do not have enough points.')

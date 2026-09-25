@@ -20,7 +20,7 @@ def test_booking_more_than_club_points_is_rejected(client):
         "/purchasePlaces",
         data={
             "club": "Iron Temple",
-            "competition": "Spring Festival",
+            "competition": "Fall Classic",
             "places": "5",
         },
     )
@@ -33,7 +33,7 @@ def test_booking_more_than_twelve_is_rejected(client):
         "/purchasePlaces",
         data={
             "club": "Simply Lift",
-            "competition": "Spring Festival",
+            "competition": "Fall Classic",
             "places": "13",
         },
     )
@@ -45,7 +45,7 @@ def test_two_bookings_cannot_exceed_twelve(client):
         "/purchasePlaces",
         data={
             "club": "Simply Lift",
-            "competition": "Spring Festival",
+            "competition": "Fall Classic",
             "places": "12",
         },
     )
@@ -53,9 +53,21 @@ def test_two_bookings_cannot_exceed_twelve(client):
         "/purchasePlaces",
         data={
             "club": "Simply Lift",
-            "competition": "Spring Festival",
+            "competition": "Fall Classic",
             "places": "1",
         },
     )
     assert b"Great-booking complete" in first.data
     assert b"cannot book more than 12 places" in second.data
+
+
+def test_booking_a_past_competition_is_rejected(client):
+    response = client.post(
+        "/purchasePlaces",
+        data={
+            "club": "Simply Lift",
+            "competition": "Spring Festival",
+            "places": "1",
+        },
+    )
+    assert b"You cannot book a past competition." in response.data
