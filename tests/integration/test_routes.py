@@ -71,3 +71,16 @@ def test_booking_a_past_competition_is_rejected(client):
         },
     )
     assert b"You cannot book a past competition." in response.data
+
+
+def test_booking_deducts_club_points(client):
+    response = client.post(
+        "/purchasePlaces",
+        data={
+            "club": "Simply Lift",
+            "competition": "Fall Classic",
+            "places": "3",
+        },
+    )
+    assert b"Great-booking complete" in response.data
+    assert server.clubs[0]["points"] == "10"
