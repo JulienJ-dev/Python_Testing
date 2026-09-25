@@ -26,3 +26,36 @@ def test_booking_more_than_club_points_is_rejected(client):
     )
     assert b"You do not have enough points." in response.data
     assert server.clubs[1]["points"] == "4"
+
+
+def test_booking_more_than_twelve_is_rejected(client):
+    response = client.post(
+        "/purchasePlaces",
+        data={
+            "club": "Simply Lift",
+            "competition": "Spring Festival",
+            "places": "13",
+        },
+    )
+    assert b"cannot book more than 12 places" in response.data
+
+
+def test_two_bookings_cannot_exceed_twelve(client):
+    first = client.post(
+        "/purchasePlaces",
+        data={
+            "club": "Simply Lift",
+            "competition": "Spring Festival",
+            "places": "12",
+        },
+    )
+    second = client.post(
+        "/purchasePlaces",
+        data={
+            "club": "Simply Lift",
+            "competition": "Spring Festival",
+            "places": "1",
+        },
+    )
+    assert b"Great-booking complete" in first.data
+    assert b"cannot book more than 12 places" in second.data
