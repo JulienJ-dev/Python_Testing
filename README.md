@@ -69,8 +69,11 @@ python -m flask --app server run
 Dans un autre terminal, lancez :
 
 ```powershell
-python -m locust -f locustfile.py --headless --users 6 --spawn-rate 6 --run-time 15s --host http://127.0.0.1:5000 --csv reports\performance\locust --html reports\performance\locust-report.html
+python -m locust -f locustfile.py --headless --run-time 15s --host http://127.0.0.1:5000 --csv reports\performance\locust --html reports\performance\locust-report.html
 ```
+
+Le fichier `locust.conf` définit par défaut 6 utilisateurs et un démarrage de 6 utilisateurs
+par seconde. Il n'est donc pas nécessaire de répéter ces paramètres dans la commande.
 
 Le compte rendu se trouve dans `reports/PERFORMANCE_REPORT.md`. Le scénario applique les
 seuils des spécifications : 5 secondes pour la liste des compétitions et 2 secondes pour
