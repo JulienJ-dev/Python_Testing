@@ -1,51 +1,92 @@
-# gudlift-registration
+# GUDLFT - plateforme régionale de réservation
 
-1. Why
+Ce projet Flask est un prototype léger permettant aux secrétaires de clubs de consulter les
+compétitions et d'utiliser leurs points pour réserver des places. Une page publique affiche
+également le solde de tous les clubs.
 
+## Fonctionnalités
 
-    This is a proof of concept (POC) project to show a light-weight version of our competition booking platform. The aim is the keep things as light as possible, and use feedback from the users to iterate.
+- connexion par l'adresse e-mail d'un club et message clair en cas d'adresse inconnue ;
+- liste des compétitions et réservation d'une compétition à venir ;
+- débit d'un point par place sur le club et d'une place sur la compétition ;
+- refus des quantités invalides, des compétitions passées, du dépassement des points ou des
+  places disponibles et de plus de 12 places au total par club et par compétition ;
+- formulaire limité automatiquement par le solde, les places restantes et le quota du club ;
+- réservations réservées au club connecté et protégées contre les achats concurrents ;
+- tableau public, en lecture seule, accessible à l'adresse `/pointsDisplay` ;
+- déconnexion et gestion des références inconnues sans plantage.
 
-2. Getting Started
+`clubs.json` et `competitions.json` servent de données initiales. Au premier achat,
+l'application crée `state.json` pour conserver ensemble les points, les places restantes et
+le nombre de places déjà achetées par club. Les achats restent donc présents après un
+redémarrage. Pour repartir des données initiales, supprimez `state.json` lorsque le serveur
+est arrêté. Ce fichier est ignoré par Git et ne doit pas être supprimé en cours d'utilisation.
 
-    This project uses the following technologies:
+## Installation sous Windows
 
-    * Python v3.x+
+Python 3.10 ou plus récent est recommandé.
 
-    * [Flask](https://flask.palletsprojects.com/en/1.1.x/)
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+```
 
-        Whereas Django does a lot of things for us out of the box, Flask allows us to add only what we need. 
-     
+## Lancer l'application
 
-    * [Virtual environment](https://virtualenv.pypa.io/en/stable/installation.html)
+```powershell
+python -m flask --app server run
+```
 
-        This ensures you'll be able to install the correct packages without interfering with Python on your machine.
+Ouvrez ensuite `http://127.0.0.1:5000`. Une adresse valide est
+`john@simplylift.co` ; les autres adresses se trouvent dans `clubs.json`.
+Pour un déploiement hors de la machine locale, définissez `FLASK_SECRET_KEY` dans
+l'environnement. Cette démonstration identifie le club par son e-mail seul : elle ne fournit
+pas d'authentification par mot de passe.
 
-        Before you begin, please ensure you have this installed globally. 
+## Tests et couverture
 
+```powershell
+python -m pytest --cov=server --cov-report=term-missing --cov-report=html:reports\coverage
+```
 
-3. Installation
+Les tests sont rangés par niveau dans `tests/unit`, `tests/integration` et
+`tests/functional`. Le dernier résultat validé compte 63 tests réussis et 96 % de
+couverture. Le compte rendu se trouve dans `reports/TEST_REPORT.md`.
 
-    - After cloning, change into the directory and type <code>virtualenv .</code>. This will then set up a a virtual python environment within that directory.
+## Test de performances
 
-    - Next, type <code>source bin/activate</code>. You should see that your command prompt has changed to the name of the folder. This means that you can install packages in here without affecting affecting files outside. To deactivate, type <code>deactivate</code>
+Le scénario réalise six vrais achats. Pour éviter de modifier vos données de démonstration,
+utilisez un fichier d'état temporaire neuf lors du lancement du serveur (changez son nom
+à chaque nouvelle campagne de charge) :
 
-    - Rather than hunting around for the packages you need, you can install in one step. Type <code>pip install -r requirements.txt</code>. This will install all the packages listed in the respective file. If you install a package, make sure others know by updating the requirements.txt file. An easy way to do this is <code>pip freeze > requirements.txt</code>
+```powershell
+$env:GUDLFT_STATE_FILE = "$PWD\tmp\performance-state.json"
+New-Item -ItemType Directory -Force tmp | Out-Null
+python -m flask --app server run
+```
 
-    - Flask requires that you set an environmental variable to the python file. However you do that, you'll want to set the file to be <code>server.py</code>. Check [here](https://flask.palletsprojects.com/en/1.1.x/quickstart/#a-minimal-application) for more details
+Dans un autre terminal, lancez :
 
-    - You should now be ready to test the application. In the directory, type either <code>flask run</code> or <code>python -m flask run</code>. The app should respond with an address you should be able to go to using your browser.
+```powershell
+python -m locust -f locustfile.py --headless --users 6 --spawn-rate 6 --run-time 15s --host http://127.0.0.1:5000 --csv reports\performance\locust --html reports\performance\locust-report.html
+```
 
-4. Current Setup
+Le compte rendu se trouve dans `reports/PERFORMANCE_REPORT.md`. Le scénario applique les
+seuils des spécifications : 5 secondes pour la liste des compétitions et 2 secondes pour
+une mise à jour réelle des points. Il utilise une réservation par utilisateur virtuel.
 
-    The app is powered by [JSON files](https://www.tutorialspoint.com/json/json_quick_guide.htm). This is to get around having a DB until we actually need one. The main ones are:
-     
-    * competitions.json - list of competitions
-    * clubs.json - list of clubs with relevant information. You can look here to see what email addresses the app will accept for login.
+## Conventions
 
-5. Testing
+- code et noms techniques en anglais ;
+- fonctions et variables en `snake_case`, constantes en majuscules ;
+- un fichier de test nommé `test_*.py` par groupe de comportements ;
+- branches de travail nommées `feature/...`, `bug/...` ou `improvement/...`, puis branche
+  `QA` pour la revue finale.
 
-    You are free to use whatever testing framework you like-the main thing is that you can show what tests you are using.
+## Ressources
 
-    We also like to show how well we're testing, so there's a module called 
-    [coverage](https://coverage.readthedocs.io/en/coverage-5.1/) you should add to your project.
-
+- [Documentation Flask](https://flask.palletsprojects.com/)
+- [Documentation pytest](https://docs.pytest.org/)
+- [Documentation Locust](https://docs.locust.io/)
+- [Dépôt de départ OpenClassrooms](https://github.com/OpenClassrooms-Student-Center/Python_Testing)
