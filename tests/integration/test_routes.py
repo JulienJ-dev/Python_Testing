@@ -1,3 +1,6 @@
+import server
+
+
 def test_unknown_email_does_not_crash(client):
     response = client.post(
         "/showSummary", data={"email": "unknown@example.com"}, follow_redirects=True
@@ -10,3 +13,16 @@ def test_valid_email_displays_summary(client):
     response = client.post("/showSummary", data={"email": "john@simplylift.co"})
     assert response.status_code == 200
     assert b"Welcome, john@simplylift.co" in response.data
+
+
+def test_booking_more_than_club_points_is_rejected(client):
+    response = client.post(
+        "/purchasePlaces",
+        data={
+            "club": "Iron Temple",
+            "competition": "Spring Festival",
+            "places": "5",
+        },
+    )
+    assert b"You do not have enough points." in response.data
+    assert server.clubs[1]["points"] == "4"
