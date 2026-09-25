@@ -20,5 +20,6 @@
         <input type="number" name="places" id="places" min="1" max="{{ [club['points']|int, competition['numberOfPlaces']|int, 12 - already_booked|int]|min }}" required/>
         <button type="submit">Book</button>
     </form>
+    <p><a href="{{ url_for('points_display') }}">View club points</a></p>
 </body>
 </html>

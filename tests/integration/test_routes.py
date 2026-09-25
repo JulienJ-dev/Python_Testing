@@ -98,3 +98,10 @@ def test_booking_more_than_available_places_is_rejected(client):
     )
     assert b"There are not enough places available." in response.data
     assert server.competitions[1]["numberOfPlaces"] == "2"
+
+
+def test_points_table_is_public(client):
+    response = client.get("/pointsDisplay")
+    assert response.status_code == 200
+    assert b"Simply Lift" in response.data
+    assert b"13" in response.data
