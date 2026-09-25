@@ -84,3 +84,17 @@ def test_booking_deducts_club_points(client):
     )
     assert b"Great-booking complete" in response.data
     assert server.clubs[0]["points"] == "10"
+
+
+def test_booking_more_than_available_places_is_rejected(client):
+    server.competitions[1]["numberOfPlaces"] = "2"
+    response = client.post(
+        "/purchasePlaces",
+        data={
+            "club": "Simply Lift",
+            "competition": "Fall Classic",
+            "places": "3",
+        },
+    )
+    assert b"There are not enough places available." in response.data
+    assert server.competitions[1]["numberOfPlaces"] == "2"

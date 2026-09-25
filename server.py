@@ -80,6 +80,9 @@ def purchasePlaces():
     if is_competition_past(competition):
         flash('You cannot book a past competition.')
         return render_template('booking.html', club=club, competition=competition)
+    if placesRequired > int(competition['numberOfPlaces']):
+        flash('There are not enough places available.')
+        return render_template('booking.html', club=club, competition=competition)
     if placesRequired > int(club['points']):
         flash('You do not have enough points.')
         return render_template('booking.html', club=club, competition=competition)
