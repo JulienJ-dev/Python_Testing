@@ -17,7 +17,7 @@
         <input type="hidden" name="competition" value="{{competition['name']}}">
         <label for="places">How many places?</label>
         {% set already_booked = competition.get('bookings', {}).get(club['name'], 0) %}
-        <input type="number" name="places" id="places" min="1" max="{{ [club['points']|int, 12 - already_booked|int]|min }}" required/>
+        <input type="number" name="places" id="places" min="1" max="{{ [club['points']|int, competition['numberOfPlaces']|int, 12 - already_booked|int]|min }}" required/>
         <button type="submit">Book</button>
     </form>
 </body>
